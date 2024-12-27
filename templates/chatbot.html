@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Jarvis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .chat-container {
+            width: 60%;
+            max-width: 800px;
+            margin: 2em auto;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            background: #0078d7;
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        .chat-body {
+            flex: 1;
+            padding: 1em;
+            max-height: 500px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+        .chat-message {
+            margin: 0.5em 0;
+            padding: 0.8em;
+            border-radius: 8px;
+            display: inline-block;
+            max-width: 70%;
+        }
+        .chat-message.user {
+            background: #0078d7;
+            color: white;
+            align-self: flex-end;
+            text-align: right;
+        }
+        .chat-message.bot {
+            background: #e0e0e0;
+            color: #333;
+            align-self: flex-start;
+        }
+        .chat-footer {
+            display: flex;
+            gap: 0.5em;
+            padding: 1em;
+            background: #f1f1f1;
+            border-top: 1px solid #ddd;
+        }
+        .chat-footer input {
+            flex: 1;
+            padding: 0.7em;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .chat-footer button {
+            padding: 0.7em 1.5em;
+            font-size: 1em;
+            background: #0078d7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chat-footer button:hover {
+            background: #005bb5;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Jarvis - Il tuo Assistente Virtuale</div>
+        <div class="chat-body" id="chatBody"></div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="Scrivi un messaggio..." />
+            <button onclick="sendMessage()">Invia</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById("chatInput");
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Aggiungi il messaggio dell'utente nella chat
+            const chatBody = document.getElementById("chatBody");
+            appendMessage("user", message);
+
+            // Richiesta al server
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messaggio: message }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    appendMessage("bot", data.risposta || "Errore: Nessuna risposta ricevuta.");
+                })
+                .catch(() => {
+                    appendMessage("bot", "Errore: Impossibile connettersi al server.");
+                });
+
+            input.value = "";
+        }
+
+        function appendMessage(sender, message) {
+            const chatBody = document.getElementById("chatBody");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.textContent = `${sender === "user" ? "Utente" : "Jarvis"}: ${message}`;
+            chatBody.appendChild(messageDiv);
+
+            // Scroll automatico verso il basso
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+
